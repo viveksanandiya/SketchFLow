@@ -1,12 +1,12 @@
-import { WebSocketServer } from "ws";
-import jwt from "jsonwebtoken";
-import { JWT_TOKEN } from "@repo/backend-common/config";
-import { prismaClient } from "@repo/db/client"
+import { WebSocket, WebSocketServer } from 'ws';
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { JWT_TOKEN } from '@repo/backend-common/config';
+import { prismaClient } from "@repo/db/client";
 
-const wss = new WebSocketServer({ port:8080 });
+const wss = new WebSocketServer({ port: 8080 });
 
 interface User {
-  ws: import('ws').WebSocket,// doubt 
+  ws: WebSocket,
   rooms: string[],
   userId: string
 }
@@ -20,22 +20,15 @@ function checkUser(token: string): string | null {
     if (typeof decoded == "string") {
       return null;
     }
-    //------
-    //above we said if it is string just return . THIS IS BETTER APPROACH
-    // -----OR------ 
-    //below we said that take decoded as jwtpayload only as we know it is . nut TS does not know
-    //-------
-    //if(!decoded || !(decoded as JwtPayload).userId){...}
 
-    if (!decoded || !decoded.userId) {
+    if (!decoded || !decoded.id) {
       return null;
     }
 
-    return decoded.userId;
+    return decoded.id;
   } catch(e) {
     return null;
   }
-  return null;
 }
 
 wss.on('connection', function connection(ws, request) {
@@ -63,10 +56,9 @@ wss.on('connection', function connection(ws, request) {
     if (typeof data !== "string") {
       parsedData = JSON.parse(data.toString());
     } else {
-      parsedData = JSON.parse(data); // {type: "join-room", roomId: 1}
+      parsedData = JSON.parse(data); // {type: "join-room", roomId: 3}
     }
 
-    //need checks like does the person have access to join this room , does this room exist 
     if (parsedData.type === "join_room") {
       const user = users.find(x => x.ws === ws);
       user?.rooms.push(parsedData.roomId);
@@ -79,9 +71,6 @@ wss.on('connection', function connection(ws, request) {
       }
       user.rooms = user?.rooms.filter(x => x === parsedData.room);
     }
-
-    console.log("message received")
-    console.log(parsedData);
 
     if (parsedData.type === "chat") {
       const roomId = parsedData.roomId;

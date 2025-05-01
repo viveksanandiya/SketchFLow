@@ -3,16 +3,22 @@
 import { ReactNode } from "react";
 
 interface ButtonProps {
-  children: ReactNode;
+  variant: "primary" | "outline";
   className?: string;
-  appName: string;
+  size: "lg" | "sm";
+  children?: ReactNode;
+  onClick?: () => void;
 }
 
-export const Button = ({ children, className, appName }: ButtonProps) => {
+export const Button = ({ size, className, variant, children, onClick }: ButtonProps) => {
   return (
     <button
-      className={className}
-      onClick={() => alert(`Hello from your ${appName} app!`)}
+      className={`
+        ${className} 
+        ${variant === "primary" ? "primary" : "outlined"} 
+        ${size === "lg" ? "px-4 py-2": "px-2 py-1"}
+      `}
+      onClick={onClick}
     >
       {children}
     </button>

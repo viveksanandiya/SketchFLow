@@ -120,7 +120,7 @@ app.post("/room", middleware, async (req, res) => {
   });
   return;
 
-}catch(err){
+  }catch(err){
     console.log("error :"+ err)
     res.status(411).json({
         message: "room with this name already exist"
@@ -130,6 +130,7 @@ app.post("/room", middleware, async (req, res) => {
 
 });
 
+//getting old message from db
 app.get("/chats/:roomId", async (req , res)=>{
   const roomId = Number(req.params.roomId);
   const messages = await prismaClient.chat.findMany({
@@ -147,4 +148,18 @@ app.get("/chats/:roomId", async (req , res)=>{
   })
 })
 
-app.listen(3001);
+app.get("/room/:slug", async (req , res)=>{
+  const slug = req.params.slug;
+  const room = await prismaClient.chat.findFirst({
+    where:{
+      //@ts-ignore
+      slug
+    }
+  })
+
+  res.json({
+    room
+  })
+})
+
+app.listen(6969);
